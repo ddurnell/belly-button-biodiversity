@@ -139,9 +139,64 @@ function buildBubbleChart(samples) {
 }
 
 function buildPanel(meta){
-  // 
+  // Populate the panel with metadata
+  // id: 940
+  // ethnicity: "Caucasian"
+  // gender: "F"
+  // age: 24
+  // location: "Beaufort/NC"
+  // bbtype: "I"
+  // wfreq: 2  
+  // console.log(meta);
 
-}
+  // clear the table
+  document.getElementById("sample-metadata").innerHTML = "";
+
+  var select = document.getElementById("sample-metadata");
+  // var names = topTen.map(n => n.name);
+
+  var table = document.createElement("table");
+  var tbody = document.createElement("tbody");
+  // console.log(select);
+
+  entries = Object.entries(meta);
+  //console.log(entries);
+  for (var k = 0; k < entries.length; k++){
+    var row = document.createElement("tr");
+    var cell = document.createElement("td");
+    entry = entries[k];
+    key = entry[0];
+    value = entry[1];
+    cell.append(key);
+    cell.append(": ");
+    cell.append(value);
+
+    row.append(cell);
+    tbody.append(row);
+  };
+
+  // for (var j = 0; j < 100; j++) {
+  //   var row = document.createElement("tr");
+  //   var cell = document.createElement("td");
+  //   cell.append("1");
+  //   cell.append(": ");
+  //   cell.append("2");
+
+  //   row.append(cell);
+  //   tbody.append(row);
+  //   //   el.text = meta;
+  // //   // el.textContent = j;
+  // //   // el.value = j + "<br>"
+  // //   // select.appendChild(el);
+  // //   // var name = names[j];
+  // //   // var el = document.createElement("option");
+  // //   // el.textContent = name;
+  // //   // el.value = name;
+  // //   select.appendChild(el);
+  // };
+  table.appendChild(tbody);
+  select.appendChild(table);
+};
 
 //read in samples.json
 d3.json("static/data/samples.json").then(function (data) {
@@ -171,8 +226,6 @@ d3.json("static/data/samples.json").then(function (data) {
     topTen.push(filteredSample);
 
   };
-
-  console.log();
 
   // Populate the dropdown with the name keys
   var select = document.getElementById("selDataset");
@@ -211,7 +264,7 @@ d3.json("static/data/samples.json").then(function (data) {
         break;
       }
     };
-    console.log(index);
+    // console.log(index);
 
     // Note the extra brackets around 'x' and 'y'
     // Plotly.restyle("bar", "x", [topTen[index].sampleValues]);
