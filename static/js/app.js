@@ -15,7 +15,7 @@ function sliceSample(sample, num) {
   // console.log(otuIds);
   // turn the ids into text
   otuIdsStr = [];
-  for (var i = 0; i < otuIds.length; i++){
+  for (var i = 0; i < otuIds.length; i++) {
     otuIdsStr.push(`OTU ${otuIds[i].toString()}`);
   };
 
@@ -37,7 +37,7 @@ function sliceSample(sample, num) {
   return filteredObject;
 };
 
-// Initializes the page with a default horizontal plot
+// Initializes the page with a horizontal plot
 function buildChart(tops) {
   console.log(tops.name);
   console.log(tops.sampleValues);
@@ -49,17 +49,6 @@ function buildChart(tops) {
   var oIds = tops.otuIds;
   var oLabels = tops.otuLabels;
 
-  // Trace1 for the Greek Data
-  var trace1 = {
-    x: sValues,
-    y: oIds,
-    text: oLabels,
-    type: "bar",
-    orientation: "h"
-  };
-
-  // data
-  // var data = [trace1];
   var data = data = [{
     type: 'bar',
     x: sValues,
@@ -68,11 +57,11 @@ function buildChart(tops) {
     orientation: 'h'
   }];
 
-  // Apply the group bar mode to the layout
+  // Title and reverse the chart
   var layout = {
-    title : `Belly Button Bacteria for ${name}`,
-    xaxis : {title: "Bacteria Count"},
-    yaxis: {autorange: "reversed"}
+    title: `Belly Button Bacteria for ${name}`,
+    xaxis: { title: "Bacteria Count" },
+    yaxis: { autorange: "reversed" }
 
     // margin: {
     //   l: 100,
@@ -87,7 +76,7 @@ function buildChart(tops) {
   Plotly.newPlot("bar", data, layout);
 }
 
-  //read in samples.json
+//read in samples.json
 d3.json("static/data/samples.json").then(function (data) {
 
   var names = data.names;
@@ -136,34 +125,57 @@ d3.json("static/data/samples.json").then(function (data) {
   // console.log(topTen[0]);
   buildChart(topTen[0]);
 
+  // Make a listener for the name dropdown
+  d3.selectAll("#selDataset").on("change", refreshBar);
 
-    // // Call updatePlotly() when a change takes place to the DOM
-    // d3.selectAll("#selDataset").on("change", updatePlotly);
+  // This function is called when a dropdown menu item is selected
+  function refreshBar() {
+    newName = d3.select("#selDataset").node().value;
+    // console.log(newName);
+    // There must be a better way
+    // Find the index of the new value
+    var index = 0;
+    for (var i=0; i<topTen.length; i++){
+      console.log(topTen[i].name);
+      if (parseInt(topTen[i].name) === parseInt(newName)){
+        index = i;
+        break;
+      }
+    };
+    console.log(index);
+    buildChart(topTen[index]);
 
-    // // This function is called when a dropdown menu item is selected
-    // function updatePlotly() {
-    //   // Use D3 to select the dropdown menu
-    //   var dropdownMenu = d3.select("#selDataset");
-    //   // Assign the value of the dropdown menu option to a variable
-    //   var dataset = dropdownMenu.property("value");
 
-    //   // Initialize x and y arrays
-    //   var x = [];
-    //   var y = [];
+    //buildChart(parseInt(newName));
+    // newName = d3.select("#selDataset").node().value; 
+    // // get the index corresponding to the new value
+    // console.log(topTen);
+    // var index = topTen.name.findIndex(newName);
+    // console.log(`newName index: ${index}`);
 
-    //   if (dataset === 'dataset1') {
-    //     x = [1, 2, 3, 4, 5];
-    //     y = [1, 2, 4, 8, 16];
-    //   }
+    //buildChart(topTen[1]);
+    // // Use D3 to select the dropdown menu
+    // var dropdownMenu = d3.select("#selDataset");
+    // // Assign the value of the dropdown menu option to a variable
+    // var dataset = dropdownMenu.property("value");
 
-    //   if (dataset === 'dataset2') {
-    //     x = [10, 20, 30, 40, 50];
-    //     y = [1, 10, 100, 1000, 10000];
-    //   }
+    // // Initialize x and y arrays
+    // var x = [];
+    // var y = [];
 
-    //   // Note the extra brackets around 'x' and 'y'
-    //   Plotly.restyle("plot", "x", [x]);
-    //   Plotly.restyle("plot", "y", [y]);
+    // if (dataset === 'dataset1') {
+    //   x = [1, 2, 3, 4, 5];
+    //   y = [1, 2, 4, 8, 16];
     // }
 
-  });
+    // if (dataset === 'dataset2') {
+    //   x = [10, 20, 30, 40, 50];
+    //   y = [1, 10, 100, 1000, 10000];
+    // }
+
+    // // Note the extra brackets around 'x' and 'y'
+    // Plotly.restyle("plot", "x", [x]);
+    // Plotly.restyle("plot", "y", [y]);
+  }
+
+});
