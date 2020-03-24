@@ -19,9 +19,6 @@ function sliceSample(sample, num) {
     otuIdsStr.push(`OTU ${otuIds[i].toString()}`);
   };
 
-
-
-
   var sampleValues = sliceArray(sample.sample_values, num);
   // console.log(sampleValues);
 
@@ -38,18 +35,18 @@ function sliceSample(sample, num) {
 };
 
 // Initializes the page with a horizontal plot
-function buildChart(tops) {
-  console.log(tops.name);
-  console.log(tops.sampleValues);
-  console.log(tops.otuIds);
-  console.log(tops.otuLabels);
+function buildBarChart(tops) {
+  // console.log(tops.name);
+  // console.log(tops.sampleValues);
+  // console.log(tops.otuIds);
+  // console.log(tops.otuLabels);
   // get the other stuff to the graph
   var name = tops.name;
   var sValues = tops.sampleValues;
   var oIds = tops.otuIds;
   var oLabels = tops.otuLabels;
 
-  var data = data = [{
+  var data = [{
     type: 'bar',
     x: sValues,
     y: oIds,
@@ -59,7 +56,7 @@ function buildChart(tops) {
 
   // Title and reverse the chart
   var layout = {
-    title: `Belly Button Bacteria for ${name}`,
+    title: `Top 10 Belly Button Bacteria for ${name}`,
     xaxis: { title: "Bacteria Count" },
     yaxis: { autorange: "reversed" }
 
@@ -74,6 +71,76 @@ function buildChart(tops) {
   // Render the plot to the div tag with id "bar"
   // Plotly.newPlot("bar", data, layout);
   Plotly.newPlot("bar", data, layout);
+};
+
+// copied and modified from stackOverflow
+// some kind of bitmapping
+function toColor(num) {
+  num = -num + 2000;
+  num >>>= 0;
+  var b = num & 0xFF,
+      g = (num & 0xFF00) >>> 8,
+      r = (num & 0xFF0000) >>> 16;
+  return "rgb(" + [r, g, b].join(",") + ")";
+};
+
+// Initializes the page with a bubble plot
+function buildBubbleChart(samples) {
+  // get the other stuff to the graph
+  // console.log(tops);
+  var name = samples.id;
+  var sValues = samples.sample_values;
+  var oIds = samples.otu_ids;
+  var oLabels = samples.otu_labels;
+
+  // * Use `otu_ids` for the x values.
+  // * Use `sample_values` for the y values.
+  // * Use `sample_values` for the marker size.
+  // * Use `otu_ids` for the marker colors.
+  // * Use `otu_labels` for the text values.
+
+  // convert oIds to colors
+  colors = [];
+  for (var i=0; i<oIds.length; i++){
+    colors.push(toColor(oIds[i]));
+  }
+
+  var data = [{
+    x: oIds,
+    y: sValues,
+    text: oLabels,
+    mode: 'markers',
+    marker: {
+      color: colors,
+      size: sValues
+    }
+  }];
+
+  // Title and reverse the chart
+  var layout = {
+    title: `Belly Button Bacteria for ${name}`,
+    showlegend: false,
+    height: 400,
+    width: 1000,
+    xaxis: { title: "OTU ID" },
+    yaxis: { title: "Bacteria Count" }
+
+    // margin: {
+    //   l: 100,
+    //   r: 100,
+    //   t: 100,
+    //   b: 100
+    // }
+  };
+
+  // Render the plot to the div tag with id "bar"
+  // Plotly.newPlot("bar", data, layout);
+  Plotly.newPlot("bubble", data, layout);
+}
+
+function buildPanel(meta){
+  // 
+
 }
 
 //read in samples.json
@@ -91,7 +158,6 @@ d3.json("static/data/samples.json").then(function (data) {
   var ids = names.map(id => id);
   var sampleValues = samples.map(s => s);
   // console.log(sampleValues);
-  var unfilteredSamples = [];
   var topTen = [];
   for (var i = 0; i < ids.length; i++) {
     var id = ids[i];
@@ -121,61 +187,38 @@ d3.json("static/data/samples.json").then(function (data) {
     select.appendChild(el);
   };
 
-  // initialize the bar chart
-  // console.log(topTen[0]);
-  buildChart(topTen[0]);
+  // initialize the charts
+  buildBarChart(topTen[0]);
+  // console.log(samples[0]);
+  buildBubbleChart(samples[0]);
+  buildPanel(metadata[0]);
+
 
   // Make a listener for the name dropdown
-  d3.selectAll("#selDataset").on("change", refreshBar);
+  d3.selectAll("#selDataset").on("change", refreshCharts);
 
   // This function is called when a dropdown menu item is selected
-  function refreshBar() {
+  function refreshCharts() {
     newName = d3.select("#selDataset").node().value;
     // console.log(newName);
     // There must be a better way
     // Find the index of the new value
     var index = 0;
     for (var i=0; i<topTen.length; i++){
-      console.log(topTen[i].name);
+      // console.log(topTen[i].name);
       if (parseInt(topTen[i].name) === parseInt(newName)){
         index = i;
         break;
       }
     };
     console.log(index);
-    buildChart(topTen[index]);
 
-
-    //buildChart(parseInt(newName));
-    // newName = d3.select("#selDataset").node().value; 
-    // // get the index corresponding to the new value
-    // console.log(topTen);
-    // var index = topTen.name.findIndex(newName);
-    // console.log(`newName index: ${index}`);
-
-    //buildChart(topTen[1]);
-    // // Use D3 to select the dropdown menu
-    // var dropdownMenu = d3.select("#selDataset");
-    // // Assign the value of the dropdown menu option to a variable
-    // var dataset = dropdownMenu.property("value");
-
-    // // Initialize x and y arrays
-    // var x = [];
-    // var y = [];
-
-    // if (dataset === 'dataset1') {
-    //   x = [1, 2, 3, 4, 5];
-    //   y = [1, 2, 4, 8, 16];
-    // }
-
-    // if (dataset === 'dataset2') {
-    //   x = [10, 20, 30, 40, 50];
-    //   y = [1, 10, 100, 1000, 10000];
-    // }
-
-    // // Note the extra brackets around 'x' and 'y'
-    // Plotly.restyle("plot", "x", [x]);
-    // Plotly.restyle("plot", "y", [y]);
+    // Note the extra brackets around 'x' and 'y'
+    // Plotly.restyle("bar", "x", [topTen[index].sampleValues]);
+    // Plotly.restyle("bar", "y", [topTen[index].otuIds]);
+    buildBarChart(topTen[index]);
+    buildBubbleChart(samples[index]);
+    buildPanel(metadata[index]);
   }
 
 });
